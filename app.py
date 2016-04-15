@@ -44,7 +44,7 @@ def login():
         try:
             g.db = connect_db() # g value is reset after each request
             cur = g.db.execute('select * from users')
-            for row in cur.fetchall():
+            for row in cur.fetchall(): # fix for multiple users
                 username=row[0]
                 password=row[1]
             g.db.close()
