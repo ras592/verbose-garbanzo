@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--<link rel="stylesheet" media="screen" href="static/bootstrap.min.css">-->
+    <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+
+        <!-- Child Template -->
+        {% block content %}{% endblock %}
+
+        <!-- Errors -->
+        {% if errors %}
+            <p class="error"><strong>Error:</strong> {{ errors }}</p>
+        {% endif %}
+
+        <!-- Flash Messages -->
+        {% for messages in get_flashed_messages() %}
+            {{ messages }}
+        {% endfor %}
+    </div>
+</body>
+</html>
