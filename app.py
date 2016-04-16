@@ -32,8 +32,11 @@ def home():
         cur = g.db.execute('select * from tests')
         tests = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
         g.db.close()
-    except sqlite3.OperationalError:
-        flash('You have no database!')
+    except Exception as e:
+        print(e)
+        g.db.rollback()
+        g.db.close()
+        flash('Database error!')
     return render_template('home.html', username=username, tests=tests)
 
 @app.route('/inventory')
@@ -53,8 +56,11 @@ def inventory():
             engine=row[5]
             cars.append(dict(model=model,price=price,car_type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
         g.db.close()
-    except sqlite3.OperationalError:
-        flash('You have no database!')
+    except Exception as e:
+        print(e)
+        g.db.rollback()
+        g.db.close()
+        flash('Database error!')
     return render_template('inventory.html', results=cars)
 
 @app.route('/add-model', methods=["GET", "POST"])
@@ -84,9 +90,11 @@ def add_model():
                 g.db.close()
                 flash('Your entry was recorded!')
                 return redirect(url_for('inventory'))
-            except sqlite3.OperationalError:
-                flash('You have no database!')
-
+            except Exception as e:
+                print(e)
+                g.db.rollback()
+                g.db.close()
+                flash('Database error!')
     return render_template('add_model.html', errors=errors)
 
 
@@ -109,8 +117,11 @@ def login():
                 return redirect(url_for('home'))
             else:
                 errors = 'Incorrect login information'
-        except sqlite3.OperationalError:
-            flash('You have no database!')
+        except Exception as e:
+            print(e)
+            g.db.rollback()
+            g.db.close()
+            flash('Database error!')
     return render_template('login.html', errors=errors)
 
 @app.route('/logout')
