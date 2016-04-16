@@ -20,7 +20,10 @@ def login_required(f):
 @app.route('/')
 def index():
     errors = []
-    return render_template('index.html', errors=errors)
+    loggedin=False
+    if 'logged-in' in session:
+        loggedin=session['logged-in']
+    return render_template('index.html', errors=errors, loggedin=loggedin)
 
 @app.route('/home')
 @login_required
@@ -37,8 +40,11 @@ def home():
         g.db.rollback()
         g.db.close()
         flash('Database error!')
-    return render_template('home.html', username=username, tests=tests)
+    return render_template('home.html', username=session['username'], loggedin=session['logged-in'], tests=tests)
 
+"""
+Must create a logged in version and user version
+"""
 @app.route('/inventory')
 @login_required
 def inventory():
@@ -61,7 +67,7 @@ def inventory():
         g.db.rollback()
         g.db.close()
         flash('Database error!')
-    return render_template('inventory.html', results=cars)
+    return render_template('inventory.html', results=cars, loggedin=session['logged-in'])
 
 @app.route('/add-model', methods=["GET", "POST"])
 @login_required
@@ -95,7 +101,7 @@ def add_model():
                 g.db.rollback()
                 g.db.close()
                 flash('Database error!')
-    return render_template('add_model.html', errors=errors)
+    return render_template('add_model.html', errors=errors, loggedin=session['logged-in'])
 
 
 @app.route('/login', methods=["GET", "POST"])
@@ -113,6 +119,7 @@ def login():
 
             if request.form['username'] == username and request.form['password'] == password:
                 session['logged-in'] = True
+                session['username'] = username
                 flash('You were just logged in!')
                 return redirect(url_for('home'))
             else:
@@ -122,7 +129,7 @@ def login():
             g.db.rollback()
             g.db.close()
             flash('Database error!')
-    return render_template('login.html', errors=errors)
+    return render_template('login.html', errors=errors, loggedin=False)
 
 @app.route('/logout')
 @login_required

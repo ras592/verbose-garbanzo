@@ -2,7 +2,6 @@
 
 {% block content %}
     <h1>Welcome back {% if username %}{{ username }}{% else %}Stranger{% endif %}!</h1>
-    <p>Click <a href="/logout">here</a> to logout.</p>
     <br><br>
     <h3>Tests:</h3>
     {% for test in tests %}
