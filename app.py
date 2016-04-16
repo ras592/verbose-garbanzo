@@ -36,6 +36,60 @@ def home():
         flash('You have no database!')
     return render_template('home.html', username=username, tests=tests)
 
+@app.route('/inventory')
+@login_required
+def inventory():
+    errors = None
+    cars=[]
+    try:
+        g.db = connect_db() # g value is reset after each request
+        cur = g.db.execute('select * from MODEL')
+        for row in cur.fetchall(): # fix for multiple users
+            model=row[0]
+            price=row[1]
+            car_type=row[2]
+            gas_mileage=row[3]
+            seat=row[4]
+            engine=row[5]
+            cars.append(dict(model=model,price=price,car_type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
+        g.db.close()
+    except sqlite3.OperationalError:
+        flash('You have no database!')
+    return render_template('inventory.html', results=cars)
+
+@app.route('/add-model', methods=["GET", "POST"])
+#@login_required
+def add_model():
+    errors = []
+    if request.method == 'POST':
+        entry = dict(
+            model=request.form['model_model'],
+            price=request.form['model_price'],
+            car_type=request.form['model_car_type'],
+            gas_mileage=request.form['model_gas_mileage'],
+            seat=request.form['model_seat'],
+            engine=request.form['model_engine']
+        )
+        for k,v in entry.items():
+            if not v:
+                errors.append("{0} has no value".format(k))
+        if not errors:
+            try:
+                g.db = connect_db() # g value is reset after each request
+                query = 'INSERT INTO MODEL VALUES("{0}",{1}, "{2}", {3}, {4}, {5})'.format(
+                    entry['model'], entry['price'], entry['car_type'], entry['gas_mileage'], entry['seat'], entry['engine']
+                )
+                g.db.execute(query)
+                g.db.commit()
+                g.db.close()
+                flash('Your entry was recorded!')
+                return redirect(url_for('inventory'))
+            except sqlite3.OperationalError:
+                flash('You have no database!')
+
+    return render_template('add_model.html', errors=errors)
+
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     errors = None

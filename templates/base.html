@@ -13,9 +13,9 @@
         {% block content %}{% endblock %}
 
         <!-- Errors -->
-        {% if errors %}
-            <p class="error"><strong>Error:</strong> {{ errors }}</p>
-        {% endif %}
+        {% for error in errors %}
+            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% endfor %}
 
         <!-- Flash Messages -->
         {% for messages in get_flashed_messages() %}
