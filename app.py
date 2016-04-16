@@ -19,13 +19,13 @@ def login_required(f):
 
 @app.route('/')
 def index():
-    errors = None
+    errors = []
     return render_template('index.html', errors=errors)
 
 @app.route('/home')
 @login_required
 def home():
-    errors = None
+    errors = []
     username = 'admin'
     try:
         g.db = connect_db() # g value is reset after each request
@@ -39,7 +39,7 @@ def home():
 @app.route('/inventory')
 @login_required
 def inventory():
-    errors = None
+    errors = []
     cars=[]
     try:
         g.db = connect_db() # g value is reset after each request
@@ -58,7 +58,7 @@ def inventory():
     return render_template('inventory.html', results=cars)
 
 @app.route('/add-model', methods=["GET", "POST"])
-#@login_required
+@login_required
 def add_model():
     errors = []
     if request.method == 'POST':
@@ -92,7 +92,7 @@ def add_model():
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
-    errors = None
+    errors = []
     if request.method == 'POST':
         username, password = None, None
         try:
