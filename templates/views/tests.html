@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Welcome back {% if username %}{{ username }}{% else %}Stranger{% endif %}!</h1>
+    <br><br>
+    <h3>Tests:</h3>
+    {% for test in results %}
+        <strong>Test Title:</strong> {{test.title}} <br>
+        <strong>Test Description:</strong> {{test.description}} <br>
+    {% endfor %}
+{% endblock %}

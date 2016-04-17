@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>Current Inventory</h1>
-    <br><br>
-    <h3>Inventory:</h3>
+    <h3>Models:</h3>
     {% for model in results %}
         <strong>Model:</strong> {{model.model}} <br>
         <strong>Price:</strong> {{model.price}} <br>

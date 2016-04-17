@@ -7,6 +7,40 @@ app = Flask(__name__)
 app.secret_key = 'a hard to guess string'
 app.database = 'sample.db'
 
+def get_global_models(db):
+    global_models = []
+    try:
+        conn = sqlite3.connect(db)
+        c = conn.cursor()
+        res = c.execute('SELECT name FROM sqlite_master WHERE type = "table"')
+        for row in res.fetchall():
+            global_models.append(row[0].lower())
+        c.close()
+    except Exception as e:
+        print(e)
+    return global_models
+
+def get_global_models_tables(db):
+    global_models_tables = []
+    try:
+        for model in app.global_models:
+            tables = []
+            conn = sqlite3.connect(db)
+            c = conn.cursor()
+            query = 'PRAGMA table_info({})'.format(model)
+            res = c.execute(query)
+            for row in res.fetchall():
+                tables.append(row[1].lower())
+            global_models_tables.append((model, tables))
+            c.close()
+    except Exception as e:
+        print(e)
+    return global_models_tables
+
+# make the call to the database to initialize it
+app.global_models = get_global_models(app.database) # change to global db
+app.global_models_tables = get_global_models_tables(app.database) # change to global db
+
 def login_required(f):
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -20,34 +54,12 @@ def login_required(f):
 @app.route('/')
 def index():
     errors = []
-    loggedin=False
-    if 'logged-in' in session:
-        loggedin=session['logged-in']
+    loggedin = loggedin_check()
     return render_template('index.html', errors=errors, loggedin=loggedin)
 
 @app.route('/home')
 @login_required
 def home():
-    errors = []
-    username = 'admin'
-    try:
-        g.db = connect_db() # g value is reset after each request
-        cur = g.db.execute('select * from tests')
-        tests = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
-        g.db.close()
-    except Exception as e:
-        print(e)
-        g.db.rollback()
-        g.db.close()
-        flash('Database error!')
-    return render_template('home.html', username=session['username'], loggedin=session['logged-in'], tests=tests)
-
-"""
-Must create a logged in version and user version
-"""
-@app.route('/inventory')
-@login_required
-def inventory():
     errors = []
     cars=[]
     try:
@@ -67,7 +79,31 @@ def inventory():
         g.db.rollback()
         g.db.close()
         flash('Database error!')
-    return render_template('inventory.html', results=cars, loggedin=session['logged-in'])
+    return render_template('inventory.html', errors=errors, results=cars, loggedin=session['logged-in'])
+
+@app.route('/inventory')
+def inventory():
+    errors = []
+    cars=[]
+    loggedin = loggedin_check()
+    try:
+        g.db = connect_db() # g value is reset after each request
+        cur = g.db.execute('select * from MODEL')
+        for row in cur.fetchall(): # fix for multiple users
+            model=row[0]
+            price=row[1]
+            car_type=row[2]
+            gas_mileage=row[3]
+            seat=row[4]
+            engine=row[5]
+            cars.append(dict(model=model,price=price,car_type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
+        g.db.close()
+    except Exception as e:
+        print(e)
+        g.db.rollback()
+        g.db.close()
+        flash('Database error!')
+    return render_template('inventory.html', errors=errors, results=cars, loggedin=loggedin)
 
 @app.route('/add-model', methods=["GET", "POST"])
 @login_required
@@ -103,6 +139,38 @@ def add_model():
                 flash('Database error!')
     return render_template('add_model.html', errors=errors, loggedin=session['logged-in'])
 
+@app.route('/display/<model>')
+@login_required
+def display(model):
+    template = 'views/'
+    errors = []
+    loggedin = loggedin_check()
+    results = []
+    if model.lower() in app.global_models:
+        template = template + model.lower() + '.html'
+        tables = app.global_models_tables
+        query = 'select * from {0}'.format(model.lower())
+        table = find_table(model.lower())
+        try:
+            g.db = connect_db() # g value is reset after each request
+            cur = g.db.execute(query)
+            for row in cur.fetchall(): # fix for multiple users
+                entry = {}
+                i = 0
+                for column in table:
+                    entry[column] = row[i]
+                    i+=1
+                results.append(entry)
+            g.db.close()
+        except Exception as e:
+            print(e)
+            g.db.rollback()
+            g.db.close()
+            flash('Database error!')
+    else:
+        errors.append("{} does not exist".format(model))
+        template = '500.html' # make 404 with descriptive fix
+    return render_template(template, errors=errors, results=results, loggedin=loggedin)
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -140,6 +208,17 @@ def logout():
 
 def connect_db():
     return sqlite3.connect(app.database)
+
+def loggedin_check():
+    loggedin=False
+    if 'logged-in' in session:
+        loggedin=session['logged-in']
+    return loggedin
+
+def find_table(model):
+    for tup in app.global_models_tables:
+        if tup[0] == model:
+            return tup[1]
 
 if __name__ == '__main__':
     app.run(debug=True)
