@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Current Inventory</h1>
+    <br><br>
+    <h3>Inventory:</h3>
+    {% for model in results %}
+        <strong>Model:</strong> {{model.model}} <br>
+        <strong>Price:</strong> {{model.price}} <br>
+        <strong>Type:</strong> {{model.type}} <br>
+        <strong>Gas Mileage:</strong> {{model.gas_mileage}} <br>
+        <strong>Seat:</strong> {{model.seat}} <br>
+        <strong>Engine:</strong> {{model.engine}} <br><br><br>
+    {% endfor %}
+{% endblock %}

@@ -3,24 +3,66 @@
 <head>
     <title>Home</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS CDN -->
     <!--<link rel="stylesheet" media="screen" href="static/bootstrap.min.css">-->
     <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 </head>
 <body>
+    {% block navbar %}
+    <div class="navbar navbar-inverse" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle"
+                data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle Navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Toyota of Missouri</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('index' )}}">Home</a></li>
+                    <li><a href="{{ url_for('inventory' )}}">Inventory</a></li>
+                </ul>
+                <ul class="nav navbar-nav  navbar-right">
+                    {% if loggedin %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Account <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('home' )}}">Home</a></li>
+                            <li><a href="{{ url_for('add_model' )}}">Add Model</a></li>
+                            <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li><a href="{{ url_for('login') }}">Sign In</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
     <div class="container">
 
         <!-- Child Template -->
         {% block content %}{% endblock %}
 
         <!-- Errors -->
-        {% if errors %}
-            <p class="error"><strong>Error:</strong> {{ errors }}</p>
-        {% endif %}
+        {% for error in errors %}
+            <p class="error"><strong>Error:</strong> {{ error }}</p>
+        {% endfor %}
 
         <!-- Flash Messages -->
         {% for messages in get_flashed_messages() %}
             {{ messages }}
         {% endfor %}
     </div>
+    <!-- jQuery CDN -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <!-- Bootstrap JavaScript CDN -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </body>
 </html>

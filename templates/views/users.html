@@ -4,8 +4,8 @@
     <h1>Welcome back {% if username %}{{ username }}{% else %}Stranger{% endif %}!</h1>
     <br><br>
     <h3>Tests:</h3>
-    {% for test in tests %}
-        <strong>Test Title:</strong> {{test.title}} <br>
-        <strong>Test Description:</strong> {{test.description}} <br>
+    {% for user in results %}
+        <strong>Username:</strong> {{user.username}} <br>
+        <strong>Password:</strong> {{user.password}} <br>
     {% endfor %}
 {% endblock %}

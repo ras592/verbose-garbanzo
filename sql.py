@@ -5,6 +5,8 @@ def run_sql():
         c = connection.cursor()
         create_test_table(c)
         create_basic_user_accts(c)
+        create_global_modal_table(c)
+        c.close()
 
 def create_test_table(c):
     c.execute("""CREATE TABLE tests(title TEXT, description TEXT)""")
@@ -14,7 +16,40 @@ def create_test_table(c):
 def create_basic_user_accts(c):
     c.execute("""CREATE TABLE users(username TEXT, password TEXT)""")
     c.execute('INSERT INTO users VALUES("admin", "admin")')
+    c.commit()
 
+def create_global_modal_table(c):
+    c.execute("""
+    CREATE TABLE MODEL(
+        MODEL VARCHAR(20),
+        PRICE DECIMAL(20, 2),
+        TYPE VARCHAR(12),
+        GAS_MILEAGE SMALLINT,
+        SEAT SMALLINT,
+        ENGINE DECIMAL(2,1)
+        )
+    """)
+    c.execute("""
+    INSERT INTO MODEL VALUES(
+        "Tacoma",
+        22000,
+        "Truck",
+        20,
+        7,
+        4.0
+        )
+    """)
+    c.execute("""
+    INSERT INTO MODEL VALUES(
+        "Tundra",
+        20000,
+        "Truck",
+        22,
+        7,
+        4.0
+        )
+    """)
+    c.commit()
 """
 Global Views
 ==========================

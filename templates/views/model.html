@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Models:</h3>
+    {% for model in results %}
+        <strong>Model:</strong> {{model.model}} <br>
+        <strong>Price:</strong> {{model.price}} <br>
+        <strong>Type:</strong> {{model.type}} <br>
+        <strong>Gas Mileage:</strong> {{model.gas_mileage}} <br>
+        <strong>Seat:</strong> {{model.seat}} <br>
+        <strong>Engine:</strong> {{model.engine}} <br><br><br>
+    {% endfor %}
+{% endblock %}
