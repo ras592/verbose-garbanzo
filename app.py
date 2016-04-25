@@ -1,11 +1,12 @@
 from flask import Flask, render_template, session, url_for, flash, redirect, g, request
 from functools import wraps
 import sqlite3
+import sql
 
 app = Flask(__name__)
 
 app.secret_key = 'a hard to guess string'
-app.database = 'sample.db'
+app.database = 'global.db'
 
 def get_global_models(db):
     global_models = []
@@ -72,7 +73,7 @@ def home():
             gas_mileage=row[3]
             seat=row[4]
             engine=row[5]
-            cars.append(dict(model=model,price=price,car_type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
+            cars.append(dict(model=model,price=price,type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
         g.db.close()
     except Exception as e:
         print(e)
@@ -96,7 +97,7 @@ def inventory():
             gas_mileage=row[3]
             seat=row[4]
             engine=row[5]
-            cars.append(dict(model=model,price=price,car_type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
+            cars.append(dict(model=model,price=price,type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
         g.db.close()
     except Exception as e:
         print(e)
@@ -118,18 +119,11 @@ def add_model():
             seat=request.form['model_seat'],
             engine=request.form['model_engine']
         )
-        for k,v in entry.items():
-            if not v:
-                errors.append("{0} has no value".format(k))
+        errors += validate_dict(entry)
         if not errors:
             try:
                 g.db = connect_db() # g value is reset after each request
-                query = 'INSERT INTO MODEL VALUES("{0}",{1}, "{2}", {3}, {4}, {5})'.format(
-                    entry['model'], entry['price'], entry['car_type'], entry['gas_mileage'], entry['seat'], entry['engine']
-                )
-                g.db.execute(query)
-                g.db.commit()
-                g.db.close()
+                sql.insert_global_model(g.db, entry)
                 flash('Your entry was recorded!')
                 return redirect(url_for('inventory'))
             except Exception as e:
@@ -169,7 +163,7 @@ def display(model):
             flash('Database error!')
     else:
         errors.append("{} does not exist".format(model))
-        template = '500.html' # make 404 with descriptive fix
+        template = '404.html' # make 404 with descriptive fix
     return render_template(template, errors=errors, results=results, loggedin=loggedin)
 
 @app.route('/login', methods=["GET", "POST"])
@@ -206,6 +200,15 @@ def logout():
     flash('You were just logged out!')
     return redirect(url_for('index'))
 
+@app.errorhandler(404)
+def page_not_found(e):
+    print(e)
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
+
 def connect_db():
     return sqlite3.connect(app.database)
 
@@ -219,6 +222,13 @@ def find_table(model):
     for tup in app.global_models_tables:
         if tup[0] == model:
             return tup[1]
+
+def validate_dict(dict_obj):
+    errors = []
+    for k,v in dict_obj.items():
+        if not v:
+            errors.append("{0} has no value".format(k))
+    return errors
 
 if __name__ == '__main__':
     app.run(debug=True)

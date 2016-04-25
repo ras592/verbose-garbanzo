@@ -1,55 +1,55 @@
 import sqlite3
+from sql_schema import global_insert_data, global_tables
 
+# Builds DBs
 def run_sql():
-    with sqlite3.connect("sample.db") as connection:
+    # I should check if the db exists if so delete it
+    with sqlite3.connect("global.db") as connection:
         c = connection.cursor()
-        create_test_table(c)
-        create_basic_user_accts(c)
-        create_global_modal_table(c)
+        create_global_user_table(c)
+        create_global_model_table(c)
+        create_global_add_on_table(c)
+        rebuild(c)
         c.close()
 
-def create_test_table(c):
-    c.execute("""CREATE TABLE tests(title TEXT, description TEXT)""")
-    c.execute('INSERT INTO tests VALUES("Test 1", "Hello, World!")')
-    c.execute('INSERT INTO tests VALUES("Test 2", "Well, hi.")')
+# Used to insert old data back into db
+def rebuild(c):
+    insert_global_model_data(c)
+    insert_global_user_data(c)
 
-def create_basic_user_accts(c):
-    c.execute("""CREATE TABLE users(username TEXT, password TEXT)""")
-    c.execute('INSERT INTO users VALUES("admin", "admin")')
-    c.commit()
+# Create Tables
 
-def create_global_modal_table(c):
-    c.execute("""
-    CREATE TABLE MODEL(
-        MODEL VARCHAR(20),
-        PRICE DECIMAL(20, 2),
-        TYPE VARCHAR(12),
-        GAS_MILEAGE SMALLINT,
-        SEAT SMALLINT,
-        ENGINE DECIMAL(2,1)
-        )
-    """)
-    c.execute("""
-    INSERT INTO MODEL VALUES(
-        "Tacoma",
-        22000,
-        "Truck",
-        20,
-        7,
-        4.0
-        )
-    """)
-    c.execute("""
-    INSERT INTO MODEL VALUES(
-        "Tundra",
-        20000,
-        "Truck",
-        22,
-        7,
-        4.0
-        )
-    """)
-    c.commit()
+def create_global_user_table(c):
+    c.execute(global_tables['users'])
+
+def create_global_model_table(c):
+    c.execute(global_tables['MODEL'])
+
+def create_global_add_on_table(c):
+    c.execute(global_tables['ADD_ON'])
+
+# Insert Data
+
+def insert_global_model(c, values):
+    try:
+        c.execute('INSERT INTO MODEL VALUES("{0}",{1}, "{2}", {3}, {4}, {5})'.format(
+            values['model'], values['price'], values['car_type'], values['gas_mileage'], values['seat'], values['engine']
+        ))
+        c.commit()
+        c.close()
+    except Exception as e:
+        raise
+
+# Insert Fake Table Data
+
+def insert_global_user_data(c):
+    for s in global_insert_data['insert_global_users']:
+        c.execute(s)
+
+def insert_global_model_data(c):
+    for s in global_insert_data['insert_global_model']:
+        c.execute(s)
+
 """
 Global Views
 ==========================
@@ -217,5 +217,3 @@ DATE (ex:)
 REBATE_AMT (ex:)
 ---------------------------
 """
-
-run_sql()
