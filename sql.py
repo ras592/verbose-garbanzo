@@ -1,6 +1,13 @@
 import sqlite3
 from sql_schema import global_insert_data, global_tables
 
+"""
+TO-DO:
+1) Phone number strip all nonnumeric chars
+2) Validate emails
+
+"""
+
 # Builds DBs
 def run_sql():
     # I should check if the db exists if so delete it
