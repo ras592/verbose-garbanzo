@@ -1,39 +1,105 @@
-import sqlite3
-from sql_schema import global_insert_data, global_tables
+import MySQLdb
+from sql_schema import global_insert_data, global_tables, \
+                        stlouis_tables, kansascity_tables, global_tables_tuple,\
+                        stlouis_tables_tuple, kansascity_tables_tuple
 
 """
+sql.py
+All of the methods to operate on the databases.
+References model statements in sql_schema.py
+
 TO-DO:
 1) Phone number strip all nonnumeric chars
 2) Validate emails
 
 """
 
-# Builds DBs
-def run_sql():
-    # I should check if the db exists if so delete it
-    with sqlite3.connect("global.db") as connection:
-        c = connection.cursor()
-        create_global_user_table(c)
-        create_global_model_table(c)
-        create_global_add_on_table(c)
-        rebuild(c)
-        c.close()
+current_dbs = ["global", "local_sl", "local_kc"]
 
-# Used to insert old data back into db
-def rebuild(c):
-    insert_global_model_data(c)
-    insert_global_user_data(c)
+"""
+CREATE Databases
+"""
+def create_mysql_db(cursor, dbs):
+    try:
+        for db in dbs:
+            cursor.execute("CREATE DATABASE IF NOT EXISTS " + db)
+    except Exception as e:
+        raise
 
-# Create Tables
+"""
+DROP Databases
+"""
+def drop_mysql_db(cursor, dbs):
+    drop_dbs = list(dbs)
+    if ('local_kc' in dbs or 'local_sl' in dbs) and 'global' in dbs:
+        index = drop_dbs.index('global')
+        drop_dbs.pop(index)
+        try:
+            for db in drop_dbs:
+                cursor.execute("DROP DATABASE IF EXISTS " + db)
+            cursor.execute("DROP DATABASE IF EXISTS global")
+        except Exception as e:
+            raise
+    else:
+        try:
+            for db in dbs:
+                cursor.execute("DROP DATABASE " + db)
+        except Exception as e:
+            raise
 
-def create_global_user_table(c):
-    c.execute(global_tables['users'])
+"""
+Creates all dbs
+Default is all current databases in current_dbs array
+"""
+def build_dbs(conn, dbs=current_dbs):
+    try:
+        create_mysql_db(conn.cursor(), dbs)
+        rebuild_tables(conn, ['global', 'local_sl', 'local_kc'])
+    except Exception as e:
+        raise
 
-def create_global_model_table(c):
-    c.execute(global_tables['MODEL'])
+"""
+Removes all dbs
+Default is all current databases in current_dbs array
+"""
+def destroy_dbs(conn, dbs=current_dbs):
+    try:
+        drop_mysql_db(conn.cursor(), dbs)
+    except Exception as e:
+        raise
 
-def create_global_add_on_table(c):
-    c.execute(global_tables['ADD_ON'])
+"""
+Inserts tables for all dbs
+Pass array
+"""
+def rebuild_tables(conn, dbs=current_dbs):
+    tables_titles = ()
+    tables = {}
+    try:
+        cursor = conn.cursor()
+        for db in dbs:
+            if db is current_dbs[0]:
+                table_titles = global_tables_tuple
+                tables = global_tables
+            elif db is current_dbs[1]:
+                table_titles = stlouis_tables_tuple
+                tables = stlouis_tables
+            elif db is current_dbs[2]:
+                table_titles = kansascity_tables_tuple
+                tables = kansascity_tables
+            else:
+                table_titles = ()
+                tables = {}
+            for k in table_titles:
+                print tables[k]
+                cursor.execute(tables[k])
+    except Exception as e:
+        raise
+
+################################################################
+################################################################
+################################################################
+################################################################
 
 # Insert Data
 
@@ -47,7 +113,11 @@ def insert_global_model(c, values):
     except Exception as e:
         raise
 
+# Insert All Fake Table Data
+# Should take array of each dbs tables
+
 # Insert Fake Table Data
+# Should take a table key
 
 def insert_global_user_data(c):
     for s in global_insert_data['insert_global_users']:
