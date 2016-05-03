@@ -96,22 +96,41 @@ def rebuild_tables(conn, dbs=current_dbs):
     except Exception as e:
         raise
 
-################################################################
-################################################################
-################################################################
-################################################################
-
 # Insert Data
 
-def insert_global_model(c, values):
+def insert_global_model(conn, values):
     try:
-        c.execute('INSERT INTO MODEL VALUES("{0}",{1}, "{2}", {3}, {4}, {5})'.format(
+        c = conn.cursor()
+        c.execute('INSERT INTO global.model VALUES("{0}",{1}, "{2}", {3}, {4}, {5})'.format(
             values['model'], values['price'], values['car_type'], values['gas_mileage'], values['seat'], values['engine']
         ))
-        c.commit()
-        c.close()
+        conn.commit()
+        conn.close()
     except Exception as e:
         raise
+
+# Basic global model query
+def global_model_query(cursor):
+    try:
+        query = 'SELECT * FROM global.model'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
+# username password authentication query
+def global_user_authenticate(conn, values):
+    try:
+        c = conn.cursor()
+        query = """
+        SELECT * FROM global.users WHERE username = '{0}' AND password = SHA('{1}')
+        """.format(values[0], values[1])
+        c.execute(query)
+        return c.fetchone()
+    except Exception as e:
+        raise
+
+################################################################
 
 # Insert All Fake Table Data
 # Should take array of each dbs tables
@@ -126,171 +145,3 @@ def insert_global_user_data(c):
 def insert_global_model_data(c):
     for s in global_insert_data['insert_global_model']:
         c.execute(s)
-
-"""
-Global Views
-==========================
----------------------------
-Table: MODEL
-PK: MODEL (ex: Tacoma, Tundra) VARCHAR/TEXT
-PRICE (ex: $22,000.00) Float/Decimal/Money
-TYPE (ex: Truck, Sedan, SUV) VARCHAR/TEXT
-GAS_MILEAGE (ex: 20, 25, 30) smallint
-SEAT (ex: 7, 5, 4) tinyint
-ENGINE (ex: 4.0, 5.6, 3.5) Float/Decimal
----------------------------
-Table: ADD_ON
-PK: PACKAGE_NO (ex:)
-PACKAGE_DESCRIPTION (ex:)
-PRICE (ex:)
-MODEL_AVAILABLE (ex:)
----------------------------
-Table: POTENTIAL_BUYER
-PK: BUYER_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
-EMAIL (ex:)
----------------------------
-Table: AVAILABLE_AUTO
-PK: SERIAL_NO (ex:)
-MODEL (ex:)
-COLOR (ex:)
-DEALER (ex:)
----------------------------
-Table: SALESPERSON
-PK: REP_NO (ex:)
-BASE_SALARY (ex:)
-YTD_SALES (ex:)
-COMM (ex:)
----------------------------
-Table: CUSTOMER_GLOBAL
-PK: CUSTOMER_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
----------------------------
-Table: EMPLOYEE
-PK: EMP_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
-POSITION (ex:)
----------------------------
-Table: SALES
-PK: TRANSACTION_NO (ex:)
-REP_NO (ex:)
-CUSTOMER_NO (ex:)
-VEH_NO (ex:)
-DATE (ex:)
----------------------------
-Table: REBATE_GLOBAL
-PK: MODEL (ex:)
-AMOUNT (ex:)
-DEALER (ex:)
-START_DATE (ex:)
-END_DATE (ex:)
----------------------------
-"""
-
-"""
-Local Views - Dealer One
-==========================
----------------------------
-Table: CARS
-PK: SERIALNO (ex:)
-MODEL (ex:)
-COLOR (ex:)
-AUTOTRANS (ex:)
-WAREHOUSE (ex:)
----------------------------
-Table: REPRESENTATIVE
-PK: REP_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
-BASE_SALARY (ex:)
-YTD_SALES (ex:)
-COMM (ex:)
----------------------------
-Table: CUSTOMER_D1
-PK: CUSTOMER_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
----------------------------
-Table: LOAN
-PK: SERIAL_NO (ex:)
-AMOUNT (ex:)
-START_DATE (ex:)
-END_DATE (ex:)
----------------------------
-Table: REBATE1
-PK: MODEL (ex:)
-AMOUNT (ex:)
-START_DATE (ex:)
-END_DATE (ex:)
----------------------------
-Table: TRANSACTION
-PK: DEAL_NO (ex:)
-REP_NO (ex:)
-CUSTOMER_NO (ex:)
-SERIAL_NO (ex:)
-AMOUNT (ex:)
-FIN_AMT (ex:)
-DATE (ex:)
-REBATE_AMT (ex:)
----------------------------
-"""
-
-"""
-Local Views - Dealer Two
-==========================
----------------------------
-Table: CARS
-PK: VEHICLE_NO (ex:)
-MODEL (ex:)
-COLOR (ex:)
-AUTOTRANS (ex:)
-WAREHOUSE (ex:)
-FINANCED (ex:)
----------------------------
-Table: SALES_PERSON
-PK: SALE_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
-COMM (ex:)
-BASE_SALARY (ex:)
-YTDSALES (ex:)
----------------------------
-Table: CUSTOMER_D2
-PK: BUYER_NO (ex:)
-NAME (ex:)
-ADDRESS (ex:)
-PHONE (ex:)
----------------------------
-Table: FINANCE
-PK: VEHICLE_NO (ex:)
-BUYER_NO (ex:)
-AMOUNT (ex:)
-MONTHS (ex:)
-BALANCE (ex:)
----------------------------
-Table: REBATE2
-PK: MODEL (ex:)
-AMOUNT (ex:)
-START_DATE (ex:)
-END_DATE (ex:)
----------------------------
-Table: DEAL
-PK: DEAL_NO (ex:)
-REP_NO (ex:)
-CUSTOMER_NO (ex:)
-SERIAL_NO (ex:)
-AMOUNT (ex:)
-FIN_AMT (ex:)
-DATE (ex:)
-REBATE_AMT (ex:)
----------------------------
-"""

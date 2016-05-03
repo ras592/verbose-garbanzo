@@ -19,12 +19,3 @@ def migration():
     else:
         print "Successfully ran migration"
         conn.close()
-
-migration()
-#cursor.execute("SELECT VERSION()")
-#data = cursor.fetchone()
-
-#print("Database version : %s " % data)
-
-#cursor.execute("""CREATE DATABASE local_sl""")
-#cursor.execute("""CREATE DATABASE local_kc""")

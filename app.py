@@ -1,46 +1,72 @@
-from flask import Flask, render_template, session, url_for, flash, redirect, g, request
+from flask import Flask, render_template, session, url_for, flash, redirect, g, request, abort
 from functools import wraps
-import sqlite3
+from sql_schema import global_tables_tuple, stlouis_tables_tuple, kansascity_tables_tuple
+import MySQLdb
 import sql
+import os
+
+"""
+Mediated Database Project:
+
+WORKING:
+1) Basic Routing
+2) Login
+3) Dynamic Global Display
+4) Global Add Model POST
+
+Changes made:
+1) Added email field to all customers.
+2) CHANGED DATE TO TRANS_DATE
+
+TO-DO:
+4) Adjust find_table to take a db name and perform searches on local dbs
+5) Change things over to multiple users
+6) Implement Insert for model and add_on
+7) Select and return vehicles by price
+8) Select and return vehicles by gas_mileage
+9) Select and return vehicles by engine_size
+# Write validate code
+# Export Statement to SQL.py
+# HOME: SHOULD BE CHANGED TO DASHBOARD FOR PERTINANT USER
+"""
 
 app = Flask(__name__)
 
-app.secret_key = 'a hard to guess string'
-app.database = 'global.db'
+app.secret_key = os.environ.get('SECRET_KEY') or 'a hard to guess string'
+app.current_dbs = list(sql.current_dbs)
+app.mysql_host = os.environ.get('MYSQL_HOST') or "localhost"
+app.mysql_user = os.environ.get('MYSQL_USER') or "rich"
+app.mysql_passwd =  os.environ.get('MYSQL_PASSWD') or "some_pass"
 
-def get_global_models(db):
-    global_models = []
-    try:
-        conn = sqlite3.connect(db)
-        c = conn.cursor()
-        res = c.execute('SELECT name FROM sqlite_master WHERE type = "table"')
-        for row in res.fetchall():
-            global_models.append(row[0].lower())
-        c.close()
-    except Exception as e:
-        print(e)
-    return global_models
+# Opens MySQL connection
+def connect_db():
+    return MySQLdb.connect(host=app.mysql_host, user=app.mysql_user,
+                            passwd=app.mysql_passwd)
 
-def get_global_models_tables(db):
-    global_models_tables = []
+def get_model_tables(db, models):
+    model_tables = []
     try:
-        for model in app.global_models:
+        for model in models:
             tables = []
-            conn = sqlite3.connect(db)
+            conn = connect_db()
             c = conn.cursor()
-            query = 'PRAGMA table_info({})'.format(model)
-            res = c.execute(query)
-            for row in res.fetchall():
-                tables.append(row[1].lower())
-            global_models_tables.append((model, tables))
+            query = 'SHOW COLUMNS FROM {0}.{1}'.format(db, model)
+            c.execute(query)
+            for row in c.fetchall():
+                tables.append(row[0].lower())
+            model_tables.append((model, tables))
             c.close()
     except Exception as e:
         print(e)
-    return global_models_tables
+    return model_tables
 
 # make the call to the database to initialize it
-app.global_models = get_global_models(app.database) # change to global db
-app.global_models_tables = get_global_models_tables(app.database) # change to global db
+app.global_models = global_tables_tuple
+app.global_model_tables = get_model_tables('global', app.global_models)
+app.sl_models = stlouis_tables_tuple
+app.sl_model_tables = get_model_tables('local_sl', app.sl_models)
+app.kc_models = kansascity_tables_tuple
+app.kc_model_tables = get_model_tables('local_kc', app.kc_models)
 
 def login_required(f):
     @wraps(f)
@@ -58,15 +84,16 @@ def index():
     loggedin = loggedin_check()
     return render_template('index.html', errors=errors, loggedin=loggedin)
 
+# SHOULD BE CHANGED TO DASHBOARD FOR PERTINANT USER
 @app.route('/home')
 @login_required
 def home():
     errors = []
     cars=[]
     try:
-        g.db = connect_db() # g value is reset after each request
-        cur = g.db.execute('select * from MODEL')
-        for row in cur.fetchall(): # fix for multiple users
+        g.conn = connect_db() # g value is reset after each request
+        res = sql.global_model_query(g.conn.cursor())
+        for row in res: # fix for multiple users
             model=row[0]
             price=row[1]
             car_type=row[2]
@@ -74,11 +101,11 @@ def home():
             seat=row[4]
             engine=row[5]
             cars.append(dict(model=model,price=price,type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
-        g.db.close()
+        g.conn.close()
     except Exception as e:
         print(e)
-        g.db.rollback()
-        g.db.close()
+        g.conn.rollback()
+        g.conn.close()
         flash('Database error!')
     return render_template('inventory.html', errors=errors, results=cars, loggedin=session['logged-in'])
 
@@ -88,9 +115,9 @@ def inventory():
     cars=[]
     loggedin = loggedin_check()
     try:
-        g.db = connect_db() # g value is reset after each request
-        cur = g.db.execute('select * from MODEL')
-        for row in cur.fetchall(): # fix for multiple users
+        g.conn = connect_db() # g value is reset after each request
+        res = sql.global_model_query(g.conn.cursor())
+        for row in res: # fix for multiple users
             model=row[0]
             price=row[1]
             car_type=row[2]
@@ -98,11 +125,11 @@ def inventory():
             seat=row[4]
             engine=row[5]
             cars.append(dict(model=model,price=price,type=car_type,gas_mileage=gas_mileage,seat=seat,engine=engine))
-        g.db.close()
+        g.conn.close()
     except Exception as e:
         print(e)
-        g.db.rollback()
-        g.db.close()
+        g.conn.rollback()
+        g.conn.close()
         flash('Database error!')
     return render_template('inventory.html', errors=errors, results=cars, loggedin=loggedin)
 
@@ -122,14 +149,14 @@ def add_model():
         errors += validate_dict(entry)
         if not errors:
             try:
-                g.db = connect_db() # g value is reset after each request
-                sql.insert_global_model(g.db, entry)
+                g.conn = connect_db() # g value is reset after each request
+                sql.insert_global_model(g.conn, entry)
                 flash('Your entry was recorded!')
                 return redirect(url_for('inventory'))
             except Exception as e:
                 print(e)
-                g.db.rollback()
-                g.db.close()
+                g.conn.rollback()
+                g.conn.close()
                 flash('Database error!')
     return render_template('add_model.html', errors=errors, loggedin=session['logged-in'])
 
@@ -142,12 +169,13 @@ def display(model):
     results = []
     if model.lower() in app.global_models:
         template = template + model.lower() + '.html'
-        tables = app.global_models_tables
-        query = 'select * from {0}'.format(model.lower())
+        tables = app.global_model_tables
+        query = 'select * from global.{0}'.format(model.lower())
         table = find_table(model.lower())
         try:
-            g.db = connect_db() # g value is reset after each request
-            cur = g.db.execute(query)
+            g.conn = connect_db() # g value is reset after each request
+            cur = g.conn.cursor()
+            cur.execute(query)
             for row in cur.fetchall(): # fix for multiple users
                 entry = {}
                 i = 0
@@ -155,15 +183,14 @@ def display(model):
                     entry[column] = row[i]
                     i+=1
                 results.append(entry)
-            g.db.close()
+            g.conn.close()
         except Exception as e:
             print(e)
-            g.db.rollback()
-            g.db.close()
+            g.conn.rollback()
+            g.conn.close()
             flash('Database error!')
     else:
-        errors.append("{} does not exist".format(model))
-        template = '404.html' # make 404 with descriptive fix
+        abort(404)
     return render_template(template, errors=errors, results=results, loggedin=loggedin)
 
 @app.route('/login', methods=["GET", "POST"])
@@ -172,24 +199,24 @@ def login():
     if request.method == 'POST':
         username, password = None, None
         try:
-            g.db = connect_db() # g value is reset after each request
-            cur = g.db.execute('select * from users')
-            for row in cur.fetchall(): # fix for multiple users
-                username=row[0]
-                password=row[1]
-            g.db.close()
+            username = validate(request.form['username'])
+            password = validate(request.form['password'])
 
-            if request.form['username'] == username and request.form['password'] == password:
+            g.conn = connect_db() # g value is reset after each request
+            res = sql.global_user_authenticate(g.conn, [username, password])
+            if res is not None:
+                username=res[0]
+                g.conn.close()
                 session['logged-in'] = True
                 session['username'] = username
                 flash('You were just logged in!')
                 return redirect(url_for('home'))
             else:
-                errors = 'Incorrect login information'
+                errors.append('Incorrect login information')
         except Exception as e:
             print(e)
-            g.db.rollback()
-            g.db.close()
+            g.conn.rollback()
+            g.conn.close()
             flash('Database error!')
     return render_template('login.html', errors=errors, loggedin=False)
 
@@ -209,26 +236,32 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'), 500
 
-def connect_db():
-    return sqlite3.connect(app.database)
-
+# Validates user is logged in
 def loggedin_check():
     loggedin=False
     if 'logged-in' in session:
         loggedin=session['logged-in']
     return loggedin
 
+# Checks for table in tuple and returns a list of column names
+# Adjust find_table to take a db name and perform searches on local dbs
 def find_table(model):
-    for tup in app.global_models_tables:
+    for tup in app.global_model_tables:
         if tup[0] == model:
             return tup[1]
 
+# Use validate_dict for POSTing new values into DB
 def validate_dict(dict_obj):
     errors = []
     for k,v in dict_obj.items():
         if not v:
             errors.append("{0} has no value".format(k))
     return errors
+
+# Escapes and validates user input for sql statements
+# Write validate code
+def validate(user_input):
+    return user_input
 
 if __name__ == '__main__':
     app.run(debug=True)
