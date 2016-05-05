@@ -96,8 +96,7 @@ def rebuild_tables(conn, dbs=current_dbs):
     except Exception as e:
         raise
 
-# Insert Data
-
+# Insert Global Model
 def insert_global_model(conn, values):
     try:
         c = conn.cursor()
@@ -117,6 +116,91 @@ def global_model_query(cursor):
         return cursor.fetchall()
     except Exception as e:
         raise
+
+# Insert Local_sl Rebate
+def insert_local_sl_rebate(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO local_sl.rebate1 VALUES("{0}",{1}, "{2}", "{3}")'.format(
+            values['model'], values['amount'], values['start_date'], values['end_date']
+        ))
+        conn.commit()
+        # insert global
+        values['dealer'] = 'local_sl'
+        insert_global_rebate(conn, values)
+        conn.close()
+    except Exception as e:
+        raise
+
+# SELECT local_sl rebate
+def select_local_sl_rebate(cursor):
+    try:
+        query = 'SELECT * FROM local_sl.rebate1'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
+# Insert Local_kc Rebate
+def insert_local_kc_rebate(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO local_kc.rebate2 VALUES("{0}",{1}, "{2}", "{3}")'.format(
+            values['model'], values['amount'], values['start_date'], values['end_date']
+        ))
+        conn.commit()
+        # insert global
+        values['dealer'] = 'local_kc'
+        insert_global_rebate(conn, values)
+        conn.close()
+    except Exception as e:
+        raise
+
+# SELECT local_kc rebate
+def select_local_kc_rebate(cursor):
+    try:
+        query = 'SELECT * FROM local_kc.rebate2'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
+# Insert global Rebate
+def insert_global_rebate(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO global.rebate_global VALUES("{0}",{1}, "{2}", "{3}", "{4}")'.format(
+            values['model'], values['amount'], values['dealer'], values['start_date'], values['end_date']
+        ))
+        conn.commit()
+    except Exception as e:
+        raise
+
+# SELECT global rebate
+def select_global_rebate(cursor):
+    try:
+        query = 'SELECT * FROM global.rebate_global'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
+def remove_old_rebates(conn):
+    try:
+        c = conn.cursor()
+        query = 'DELETE FROM global.rebate_global WHERE end_date< NOW()'
+        c.execute(query)
+        conn.commit()
+        query = 'DELETE FROM local_sl.rebate1 WHERE end_date< NOW()'
+        c.execute(query)
+        conn.commit()
+        query = 'DELETE FROM local_kc.rebate2 WHERE end_date< NOW()'
+        c.execute(query)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise
+
 
 # username password authentication query
 def global_user_authenticate(conn, values):

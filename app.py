@@ -90,6 +90,7 @@ def index():
 def home():
     errors = []
     cars=[]
+    loggedin = loggedin_check()
     try:
         g.conn = connect_db() # g value is reset after each request
         res = sql.global_model_query(g.conn.cursor())
@@ -107,7 +108,7 @@ def home():
         g.conn.rollback()
         g.conn.close()
         flash('Database error!')
-    return render_template('inventory.html', errors=errors, results=cars, loggedin=session['logged-in'])
+    return render_template('inventory.html', errors=errors, results=cars, loggedin=loggedin)
 
 @app.route('/inventory')
 def inventory():
@@ -137,6 +138,7 @@ def inventory():
 @login_required
 def add_model():
     errors = []
+    loggedin = loggedin_check()
     if request.method == 'POST':
         entry = dict(
             model=request.form['model_model'],
@@ -158,7 +160,43 @@ def add_model():
                 g.conn.rollback()
                 g.conn.close()
                 flash('Database error!')
-    return render_template('add_model.html', errors=errors, loggedin=session['logged-in'])
+    return render_template('add_model.html', errors=errors, loggedin=loggedin)
+
+@app.route('/add-rebate', methods=["GET", "POST"])
+@login_required
+def add_rebate():
+    errors = []
+    loggedin = loggedin_check()
+    if 'dealer' in session:
+        dealer = session['dealer']
+    else:
+        dealer = None
+    if request.method == 'POST':
+        entry = dict(
+            model=request.form['model'],
+            amount=request.form['amount'],
+            start_date=request.form['start_time'],
+            end_date=request.form['end_time']
+        )
+        errors += validate_dict(entry)
+        if not errors:
+            try:
+                g.conn = connect_db() # g value is reset after each request
+                if dealer == "local_sl":
+                    sql.insert_local_sl_rebate(g.conn, entry)
+                elif dealer == "local_kc":
+                    sql.insert_local_kc_rebate(g.conn, entry)
+                else:
+                    abort(401)
+                flash('Your rebate was recorded!')
+                return redirect(url_for('home'))
+            except Exception as e:
+                print(e)
+                g.conn.rollback()
+                g.conn.close()
+                flash('Database error!')
+    return render_template('add_rebate.html', errors=errors, loggedin=loggedin)
+
 
 @app.route('/display/<model>')
 @login_required
@@ -209,6 +247,7 @@ def login():
                 g.conn.close()
                 session['logged-in'] = True
                 session['username'] = username
+                session['dealer'] = "local_sl" # change for different users their location
                 flash('You were just logged in!')
                 return redirect(url_for('home'))
             else:
@@ -226,6 +265,11 @@ def logout():
     session.pop('logged-in', None)
     flash('You were just logged out!')
     return redirect(url_for('index'))
+
+@app.errorhandler(401)
+def page_not_found(e):
+    print(e)
+    return render_template('404.html'), 401 # Return a particular template
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -262,6 +306,16 @@ def validate_dict(dict_obj):
 # Write validate code
 def validate(user_input):
     return user_input
+
+def async_cron_job(app):
+    with app.app_context():
+        sql.remove_old_rebates(connect_db())
+
+def cron_job():
+    app = current_app._get_current_object()
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Available Rebates:</h3>
+    {% for rebate in results %}
+        <strong>Model:</strong> {{rebate.model}} <br>
+        <strong>Amount:</strong> {{rebate.amount}} <br>
+        {% if dealer %}
+        <strong>Dealer:</strong> {{rebate.dealer}} <br>
+        {% endif %}
+        <strong>Start Date:</strong> {{rebate.start_date}} <br>
+        <strong>End Date:</strong> {{rebate.end_date}} <br><br><br>
+    {% endfor %}
+{% endblock %}
