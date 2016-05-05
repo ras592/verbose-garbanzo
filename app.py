@@ -201,12 +201,14 @@ def add_rebate():
 @app.route('/display/<model>')
 @login_required
 def display(model):
+    print model
     template = 'views/'
     errors = []
     loggedin = loggedin_check()
     results = []
     if model.lower() in app.global_models:
         template = template + model.lower() + '.html'
+        print template
         tables = app.global_model_tables
         query = 'select * from global.{0}'.format(model.lower())
         table = find_table(model.lower())

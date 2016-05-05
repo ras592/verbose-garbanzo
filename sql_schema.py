@@ -106,7 +106,7 @@ global_tables = {
     """,
     "rebate_global": """
     CREATE TABLE global.rebate_global(
-        model VARCHAR(45) PRIMARY KEY,
+        model VARCHAR(45),
         amount DECIMAL(20, 2) DEFAULT 0 NOT NULL,
         dealer VARCHAR(45) NOT NULL,
         start_date DATETIME NOT NULL,
@@ -279,7 +279,7 @@ INSERT Fake Data
 global_insert_data = {
     "insert_global_model": [
         """
-        INSERT INTO MODEL VALUES(
+        INSERT INTO global.model VALUES(
             "Tacoma",
             22000,
             "Truck",
@@ -289,7 +289,7 @@ global_insert_data = {
             )
         """,
         """
-        INSERT INTO MODEL VALUES(
+        INSERT INTO global.model VALUES(
             "Tundra",
             20000,
             "Truck",

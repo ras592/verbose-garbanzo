@@ -55,6 +55,9 @@ def build_dbs(conn, dbs=current_dbs):
     try:
         create_mysql_db(conn.cursor(), dbs)
         rebuild_tables(conn, ['global', 'local_sl', 'local_kc'])
+        insert_global_user_data(conn.cursor())
+        insert_global_model_data(conn.cursor())
+        conn.commit()
     except Exception as e:
         raise
 
