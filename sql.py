@@ -120,6 +120,18 @@ def global_model_query(cursor):
     except Exception as e:
         raise
 
+# global insert add on
+def insert_global_add_on(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO global.add_on VALUES("{0}", "{1}", {2}, "{3}", "{4}")'.format(
+            values['package_no'], values['package_description'], values['price'], values['model_available'], values['model']
+        ))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise
+
 # Insert Local_sl Rebate
 def insert_local_sl_rebate(conn, values):
     try:

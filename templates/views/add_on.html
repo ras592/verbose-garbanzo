@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Add Ons:</h3>
+    {% for add_on in results %}
+        <strong>Package Number:</strong> {{add_on.package_no}} <br>
+        <strong>Package Description:</strong> {{add_on.package_description}} <br>
+        <strong>Price:</strong> {{add_on.price}} <br>
+        <strong>Model:</strong> {{add_on.model}} <br>
+        <strong>Model Available:</strong> {{add_on.model_available}} <br>
+    {% endfor %}
+{% endblock %}

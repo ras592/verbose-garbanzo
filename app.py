@@ -162,6 +162,33 @@ def add_model():
                 flash('Database error!')
     return render_template('add_model.html', errors=errors, loggedin=loggedin)
 
+@app.route('/add-add_on', methods=["GET", "POST"])
+@login_required
+def add_add_on():
+    errors = []
+    loggedin = loggedin_check()
+    if request.method == 'POST':
+        entry = dict(
+            package_no=request.form['package_no'],
+            package_description=request.form['package_description'],
+            price=request.form['price'],
+            model_available=request.form['model_available'],
+            model=request.form['model']
+        )
+        errors += validate_dict(entry)
+        if not errors:
+            try:
+                g.conn = connect_db() # g value is reset after each request
+                sql.insert_global_add_on(g.conn, entry)
+                flash('Your entry was recorded!')
+                return redirect(url_for('inventory'))
+            except Exception as e:
+                print(e)
+                g.conn.rollback()
+                g.conn.close()
+                flash('Database error!')
+    return render_template('add_add_on.html', errors=errors, loggedin=loggedin)
+
 @app.route('/add-rebate', methods=["GET", "POST"])
 @login_required
 def add_rebate():
