@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Available St. Louis Vehicles:</h3>
+    {% for cars in results %}
+        <strong>Serial Number:</strong> {{cars.serialno}} <br>
+        <strong>Model:</strong> {{cars.model}} <br>
+        <strong>Color:</strong> {{cars.color}} <br>
+        <strong>Automatic Transmission:</strong> {{cars.autotrans}} <br>
+        <strong>Warehouse:</strong> {{cars.warehouse}} <br><br><br>
+    {% endfor %}
+{% endblock %}

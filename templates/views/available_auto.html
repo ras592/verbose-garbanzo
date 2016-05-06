@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Available Vehicles:</h3>
+    {% for cars in results %}
+        <strong>Serial Number:</strong> {{cars.serial_no}} <br>
+        <strong>Model:</strong> {{cars.model}} <br>
+        <strong>Color:</strong> {{cars.color}} <br>
+        <strong>Dealer:</strong> {{cars.dealer}} <br><br><br>
+    {% endfor %}
+{% endblock %}

@@ -25,6 +25,24 @@
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('index' )}}">Home</a></li>
                     <li><a href="{{ url_for('inventory' )}}">Inventory</a></li>
+                    {% if loggedin %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">St. Louis Admin <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('sl_cars' )}}">Vehicles</a></li>
+                            <li><a href="{{ url_for('sl_add_cars' )}}">Add Vehicle</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
+                    {% if loggedin %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Kansas City Admin <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('kc_autos' )}}">Vehicles</a></li>
+                            <li><a href="{{ url_for('kc_add_autos' )}}">Add Vehicle</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav  navbar-right">
                     {% if loggedin %}

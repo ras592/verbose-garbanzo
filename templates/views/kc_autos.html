@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h3>Available Kansas City Vehicles:</h3>
+    {% for autos in results %}
+        <strong>Vehicle Number:</strong> {{autos.vehicle_no}} <br>
+        <strong>Model:</strong> {{autos.model}} <br>
+        <strong>Color:</strong> {{autos.color}} <br>
+        <strong>Automatic Transmission:</strong> {{autos.autotrans}} <br>
+        <strong>Warehouse:</strong> {{autos.warehouse}} <br>
+        <strong>Financed:</strong> {{autos.financed}} <br><br><br>
+    {% endfor %}
+{% endblock %}

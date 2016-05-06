@@ -132,6 +132,75 @@ def insert_global_add_on(conn, values):
     except Exception as e:
         raise
 
+# Insert local_sl cars
+def insert_local_sl_cars(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO local_sl.cars VALUES({0}, "{1}", "{2}", "{3}", "{4}")'.format(
+            values['serialno'], values['model'], values['color'], values['autotrans'], values['warehouse']
+        ))
+        conn.commit()
+        # insert global
+        entry = {
+            "serial_no": values['serialno'],
+            "model": values['model'],
+            "color": values['color'],
+            "dealer": 'local_sl'
+        }
+        insert_global_available_autos(conn, entry)
+        conn.close()
+    except Exception as e:
+        raise
+
+# Insert local_kc autos
+def insert_local_kc_autos(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO local_kc.autos VALUES({0}, "{1}", "{2}", "{3}", "{4}", "{5}")'.format(
+            values['vehicle_no'], values['model'], values['color'], values['autotrans'], values['warehouse'], values['financed']
+        ))
+        conn.commit()
+        # insert global
+        entry = {
+            "serial_no": values['vehicle_no'],
+            "model": values['model'],
+            "color": values['color'],
+            "dealer": 'local_kc'
+        }
+        insert_global_available_autos(conn, entry)
+        conn.close()
+    except Exception as e:
+        raise
+
+
+# Insert gloabl available_autos
+def insert_global_available_autos(conn, values):
+    try:
+        c = conn.cursor()
+        c.execute('INSERT INTO global.available_auto VALUES({0}, "{1}", "{2}", "{3}")'.format(
+            values['serial_no'], values['model'], values['color'], values['dealer']
+        ))
+        conn.commit()
+    except Exception as e:
+        raise
+
+# Select local_sl cars
+def select_local_sl_cars(cursor):
+    try:
+        query = 'SELECT * FROM local_sl.cars'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
+def select_local_kc_autos(cursor):
+    try:
+        query = 'SELECT * FROM local_kc.autos'
+        cursor.execute(query)
+        return cursor.fetchall()
+    except Exception as e:
+        raise
+
 # Insert Local_sl Rebate
 def insert_local_sl_rebate(conn, values):
     try:

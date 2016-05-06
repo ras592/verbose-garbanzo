@@ -224,6 +224,107 @@ def add_rebate():
                 flash('Database error!')
     return render_template('add_rebate.html', errors=errors, loggedin=loggedin)
 
+@app.route('/stlouis/add-cars', methods=["GET", "POST"])
+@login_required
+def sl_add_cars():
+    errors = []
+    loggedin = loggedin_check()
+    if request.method == 'POST':
+        entry = dict(
+            serialno=request.form['serialno'],
+            model=request.form['model'],
+            color=request.form['color'],
+            autotrans=request.form['autotrans'],
+            warehouse=request.form['warehouse']
+        )
+        errors += validate_dict(entry)
+        if not errors:
+            try:
+                g.conn = connect_db() # g value is reset after each request
+                sql.insert_local_sl_cars(g.conn, entry)
+                flash('Your vehicle was recorded!')
+                return redirect(url_for('home'))
+            except Exception as e:
+                print(e)
+                g.conn.rollback()
+                g.conn.close()
+                flash('Database error!')
+    return render_template('add_cars.html', errors=errors, loggedin=loggedin)
+
+@app.route('/stlouis/cars')
+def sl_cars():
+    errors = []
+    cars=[]
+    loggedin = loggedin_check()
+    try:
+        g.conn = connect_db() # g value is reset after each request
+        res = sql.select_local_sl_cars(g.conn.cursor())
+        for row in res: # fix for multiple users
+            serialno=row[0]
+            model=row[1]
+            color=row[2]
+            autotrans=row[3]
+            warehouse=row[4]
+            cars.append(dict(serialno=serialno,model=model,color=color,autotrans=autotrans,warehouse=warehouse))
+        g.conn.close()
+    except Exception as e:
+        print(e)
+        g.conn.rollback()
+        g.conn.close()
+        flash('Database error!')
+    return render_template('/views/sl_cars.html', errors=errors, results=cars, loggedin=loggedin)
+
+@app.route('/kansascity/add-autos', methods=["GET", "POST"])
+@login_required
+def kc_add_autos():
+    errors = []
+    loggedin = loggedin_check()
+    if request.method == 'POST':
+        entry = dict(
+            vehicle_no=request.form['vehicle_no'],
+            model=request.form['model'],
+            color=request.form['color'],
+            autotrans=request.form['autotrans'],
+            warehouse=request.form['warehouse'],
+            financed=request.form['financed']
+        )
+        errors += validate_dict(entry)
+        if not errors:
+            try:
+                g.conn = connect_db() # g value is reset after each request
+                sql.insert_local_kc_autos(g.conn, entry)
+                flash('Your vehicle was recorded!')
+                return redirect(url_for('home'))
+            except Exception as e:
+                print(e)
+                g.conn.rollback()
+                g.conn.close()
+                flash('Database error!')
+    return render_template('add_autos.html', errors=errors, loggedin=loggedin)
+
+@app.route('/kansascity/autos')
+def kc_autos():
+    errors = []
+    cars=[]
+    loggedin = loggedin_check()
+    try:
+        g.conn = connect_db() # g value is reset after each request
+        res = sql.select_local_kc_autos(g.conn.cursor())
+        for row in res: # fix for multiple users
+            vehicle_no=row[0]
+            model=row[1]
+            color=row[2]
+            autotrans=row[3]
+            warehouse=row[4]
+            financed=row[5]
+            cars.append(dict(vehicle_no=vehicle_no,model=model,color=color,autotrans=autotrans,warehouse=warehouse,financed=financed))
+        g.conn.close()
+    except Exception as e:
+        print(e)
+        g.conn.rollback()
+        g.conn.close()
+        flash('Database error!')
+    return render_template('/views/kc_autos.html', errors=errors, results=cars, loggedin=loggedin)
 
 @app.route('/display/<model>')
 @login_required
