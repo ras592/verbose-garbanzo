@@ -43,6 +43,18 @@
                         </ul>
                     </li>
                     {% endif %}
+                    {% if loggedin %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Global Admin <b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="{{ url_for('display', model='model')}}">Models</a></li>
+                            <li><a href="{{ url_for('display', model='available_auto')}}">Available Vehicles</a></li>
+                            <li><a href="{{ url_for('display', model='add_on')}}">Packages</a></li>
+                            <li><a href="{{ url_for('display', model='rebate_global')}}">Rebates</a></li>
+                            <li><a href="{{ url_for('display', model='users')}}">Users</a></li>
+                        </ul>
+                    </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav  navbar-right">
                     {% if loggedin %}
