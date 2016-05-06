@@ -2,11 +2,26 @@
 
 {% block content %}
     <h3>Available St. Louis Vehicles:</h3>
-    {% for cars in results %}
-        <strong>Serial Number:</strong> {{cars.serialno}} <br>
-        <strong>Model:</strong> {{cars.model}} <br>
-        <strong>Color:</strong> {{cars.color}} <br>
-        <strong>Automatic Transmission:</strong> {{cars.autotrans}} <br>
-        <strong>Warehouse:</strong> {{cars.warehouse}} <br><br><br>
-    {% endfor %}
+    <table class="table table-hover">
+    	<thead>
+    		<tr>
+    			<th>Serial Number</th>
+    			<th>Model</th>
+    			<th>Color</th>
+    			<th>Automatic Transmission</th> 
+    			<th>Warehouse</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+		    {% for cars in results %}
+	        <tr>
+		        <td>{{cars.serialno}}</td>
+		        <td>{{cars.model}}</td>
+		        <td>{{cars.color}}</td>
+		        <td>{{cars.autotrans}}</td>
+		        <td>{{cars.warehouse}}</td>
+	    	</tr>
+		    {% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

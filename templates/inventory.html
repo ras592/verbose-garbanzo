@@ -3,13 +3,28 @@
 {% block content %}
     <h1>Current Inventory</h1>
     <br><br>
-    <h3>Inventory:</h3>
-    {% for model in results %}
-        <strong>Model:</strong> {{model.model}} <br>
-        <strong>Price:</strong> {{model.price}} <br>
-        <strong>Type:</strong> {{model.type}} <br>
-        <strong>Gas Mileage:</strong> {{model.gas_mileage}} <br>
-        <strong>Seat:</strong> {{model.seat}} <br>
-        <strong>Engine:</strong> {{model.engine}} <br><br><br>
-    {% endfor %}
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Price</th>
+                <th>Type</th>
+                <th>Gas Mileage</th>
+                <th>Seat</th>
+                <th>Engine</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for model in results %}
+            <tr>
+                <td>{{model.model}}</td>
+                <td>{{model.price}}</td>
+                <td>{{model.type}}</td>
+                <td>{{model.gas_mileage}}</td>
+                <td>{{model.seat}}</td>
+                <td>{{model.engine}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

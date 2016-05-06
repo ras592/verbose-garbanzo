@@ -2,11 +2,26 @@
 
 {% block content %}
     <h3>Add Ons:</h3>
-    {% for add_on in results %}
-        <strong>Package Number:</strong> {{add_on.package_no}} <br>
-        <strong>Package Description:</strong> {{add_on.package_description}} <br>
-        <strong>Price:</strong> {{add_on.price}} <br>
-        <strong>Model:</strong> {{add_on.model}} <br>
-        <strong>Model Available:</strong> {{add_on.model_available}} <br>
-    {% endfor %}
+    <table class="table table-hover">
+    	<thead>
+    		<tr>
+    			<th>Package Number</th>
+    			<th>Package Description</th>
+    			<th>Price</th>
+    			<th>Model</th>
+    			<th>Model Available</th>
+    		</tr>
+    	</thead>
+    	<tbody>
+		    {% for add_on in results %}
+	        <tr>
+		        <td>{{add_on.package_no}}</td>
+		        <td>{{add_on.package_description}}</td>
+		        <td>{{add_on.price}}</td>
+		        <td>{{add_on.model}}</td>
+		        <td>{{add_on.model_available}}</td>
+	    	</tr>
+		    {% endfor %}
+		</tbody>
+	</table>
 {% endblock %}

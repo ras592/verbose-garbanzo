@@ -2,10 +2,24 @@
 
 {% block content %}
     <h3>Available Vehicles:</h3>
-    {% for cars in results %}
-        <strong>Serial Number:</strong> {{cars.serial_no}} <br>
-        <strong>Model:</strong> {{cars.model}} <br>
-        <strong>Color:</strong> {{cars.color}} <br>
-        <strong>Dealer:</strong> {{cars.dealer}} <br><br><br>
-    {% endfor %}
+    <table class="table table-hover">
+    	<thead>
+    		<tr>
+    			<th>Serial Number</th>
+    			<th>Model</th>
+    			<th>Color</th>
+    			<th>Dealer</th>    	
+    		</tr>
+    	</thead>
+    	<tbody>
+		    {% for cars in results %}
+	        <tr>
+		        <td>{{cars.serial_no}}</td>
+		        <td>{{cars.model}}</td>
+		        <td>{{cars.color}}</td>
+		        <td>{{cars.dealer}}</td>
+	    	</tr>
+		    {% endfor %}
+		</tbody>
+	</table>
 {% endblock %}
