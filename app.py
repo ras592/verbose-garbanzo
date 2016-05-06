@@ -481,11 +481,11 @@ def validate(user_input):
 
 def async_cron_job(app):
     with app.app_context():
-        sql.remove_old_rebates(connect_db())
+        sql.remove_old_rebates(connect_db().conn())
 
 def cron_job():
     app = current_app._get_current_object()
-    thr = Thread(target=send_async_email, args=[app, msg])
+    thr = Thread(target=async_cron_job, args=[app])
     thr.start()
     return thr
 
