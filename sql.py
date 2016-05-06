@@ -298,6 +298,46 @@ def global_user_authenticate(conn, values):
     except Exception as e:
         raise
 
+def remove_user(conn, entry_id):
+    try:
+        c = conn.cursor()
+        query = 'DELETE FROM global.users WHERE username="{0}"'.format(entry_id)
+        c.execute(query)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise
+
+def remove_cars(conn, entry_id):
+    try:
+        c = conn.cursor()
+        query = 'DELETE FROM local_sl.cars WHERE serialno="{0}"'.format(entry_id)
+        c.execute(query)
+        remove_available_auto(conn, entry_id)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise
+
+def remove_autos(conn, entry_id):
+    try:
+        c = conn.cursor()
+        query = 'DELETE FROM local_kc.autos WHERE vehicle_no="{0}"'.format(entry_id)
+        c.execute(query)
+        remove_available_auto(conn, entry_id)
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        raise
+
+def remove_available_auto(conn, entry_id):
+    try:
+        c = conn.cursor()
+        query = 'DELETE FROM global.available_auto WHERE serial_no="{0}"'.format(entry_id)
+        c.execute(query)
+    except Exception as e:
+        raise
+
 ################################################################
 
 # Insert All Fake Table Data

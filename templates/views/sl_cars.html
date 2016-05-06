@@ -20,6 +20,7 @@
 		        <td>{{cars.color}}</td>
 		        <td>{{cars.autotrans}}</td>
 		        <td>{{cars.warehouse}}</td>
+                <td><a href="{{url_for('delete_cars', serialno=cars.serialno)}}">DELETE</a></td>
 	    	</tr>
 		    {% endfor %}
 		</tbody>

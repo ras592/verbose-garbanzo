@@ -22,6 +22,7 @@
 		        <td>{{autos.autotrans}}</td>
 		        <td>{{autos.warehouse}}</td>
 		        <td>{{autos.financed}}</td>
+                <td><a href="{{url_for('delete_autos', vehicle_no=autos.vehicle_no)}}">DELETE</a></td>
 	    	</tr>
 		    {% endfor %}
 		</tbody>

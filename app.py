@@ -361,6 +361,48 @@ def display(model):
         abort(404)
     return render_template(template, errors=errors, results=results, loggedin=loggedin)
 
+@app.route('/delete_user/<username>')
+@login_required
+def delete_user(username):
+    try:
+        g.conn = connect_db()
+        sql.remove_user(g.conn, username)
+        return redirect(url_for('display', model='users'))
+    except Exception as e:
+        print(e)
+        g.conn.rollback()
+        g.conn.close()
+        flash('Database error!')
+        return redirect(url_for('display', model='users'))
+
+@app.route('/delete_cars/<serialno>')
+@login_required
+def delete_cars(serialno):
+    try:
+        g.conn = connect_db()
+        sql.remove_cars(g.conn, serialno)
+        return redirect(url_for('sl_cars'))
+    except Exception as e:
+        print(e)
+        g.conn.rollback()
+        g.conn.close()
+        flash('Database error!')
+        return redirect(url_for('sl_cars'))
+
+@app.route('/delete_autos/<vehicle_no>')
+@login_required
+def delete_autos(vehicle_no):
+    try:
+        g.conn = connect_db()
+        sql.remove_autos(g.conn, vehicle_no)
+        return redirect(url_for('kc_autos'))
+    except Exception as e:
+        print(e)
+        g.conn.rollback()
+        g.conn.close()
+        flash('Database error!')
+        return redirect(url_for('kc_autos'))
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     errors = []
